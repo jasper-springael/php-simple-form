@@ -1,11 +1,6 @@
 <?php
 //this line makes PHP behave in a more strict way
 declare(strict_types=1);
-include 'ChromePhp.php';
-
-ChromePhp::log('hello');
-
-//we are going to use session variables so we need to enable sessions
 session_start();
 
 function whatIsHappening() {
@@ -31,12 +26,12 @@ if ((isset($_GET["food"]) && $_GET["food"]==1) || !isset($_GET["food"])) {
         ['name' => 'Club Salmon', 'price' => 5]
     ];
 } else {
-$products = [
-    ['name' => 'Cola', 'price' => 2],
-    ['name' => 'Fanta', 'price' => 2],
-    ['name' => 'Sprite', 'price' => 2],
-    ['name' => 'Ice-tea', 'price' => 3],
-];
+    $products = [
+        ['name' => 'Cola', 'price' => 2],
+        ['name' => 'Fanta', 'price' => 2],
+        ['name' => 'Sprite', 'price' => 2],
+        ['name' => 'Ice-tea', 'price' => 3],
+    ];
 }
 
 $totalValue = 0;
@@ -48,65 +43,69 @@ $streetNumber=0;
 $city="";
 $zipCode=0;
 
-if (isset($_POST["submit"])) {
-    $emailError="";
-    $wrongEmailFormat="";
-    $streetError="";
-    $cityError="";
-    $streetNumberError="";
+$_SESSION['email']="";
+$_SESSION['street']="";
+$_SESSION['streetnumber']="";
+$_SESSION['city']="";
+$_SESSION['zipcode']="";
+$_SESSION['error']= "";
 
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    
+    $email=test_input($_POST["email"]);
+    $street=test_input($_POST["street"]);
+    $streetNumber=test_input($_POST["streetnumber"]);
+    $city=test_input($_POST["city"]);
+    $zipCode=test_input($_POST["zipcode"]);
+    $products=($_POST['products']);
+    $formvals=array();
+    // store the checked values globally in a session
+    $_SESSION['email']=$email;
+    $_SESSION['street']=$street;
+    $_SESSION['streetnumber']=$streetNumber;
+    $_SESSION['city']=$city;
+    $_SESSION['zipcode']=$zipCode;
+    $_SESSION['error']= array();
     // test if entries are filled in and valid
     checkEmail($email);
     checkStreet($street);
     checkStreetNumber($streetNumber);
     checkCity($city);
     checkZipcode($zipCode);
-}  
- 
 
-function checkEmail($email) {
-    if (empty($_POST["email"])) {
-        $EmailError="Hey, you need an e-mail!";
+}  
+
+
+function checkEmail($emailInput) {
+    if (empty($emailInput)) {
+        $_SESSION['error'][]="email";
     } else {
-        $email=test_input($_POST["email"]);
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $WrongEmailFormat="Enter a valid email";
-            // invalid emailaddress
-            return;
+        if (!filter_var($emailInput, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['error'][]="email";
+
         }
     }
 }
-function checkStreet($street) {
-    if (empty($_POST["street"])) {
-        $streetError="Enter a valid street!";
-    } else {
-        $street=test_input($_POST["street"]);
-        return;
-    }
-}
-function checkStreetNumber($streetNumber) {
-    if ($_POST["streetnumber"]==0 || $_POST["streetnumber"]==null) {
-        $streetNumberError="Enter a valid streetnumber!";
-    } else {
-        $streetNumber=test_input($_POST["streetnumber"]);
-        return;
-    }
-}
-function checkCity($city) {
-    if (empty($_POST["city"])) {
-        $cityError="Enter a valid city!";
-    } else {
-        $city=test_input($_POST["city"]);
-        return;
-    }
+function checkStreet($streetInput) {
+    if (empty($streetInput)) {
+        $_SESSION['error'][]="street";
 
+    }
 }
-function checkZipCode($zipCode) {
-    if (empty($_POST["zipCode"])) {
-        $zipCodeError="Enter a valid zipcode";
-    } else {
-        $zipCode=test_input($_POST["zipcode"]);
-        return;
+function checkStreetNumber($streetNumberInput) {
+    if ($streetNumberInput==0 || $streetNumberInput==null || !is_numeric($streetNumberInput)) {
+        $_SESSION['error'][]="streetnumber";
+
+    }
+}
+function checkCity($cityInput) {
+    if (empty($cityInput)) {
+        $_SESSION['error'][]="city";
+    }
+}
+function checkZipCode($zipCodeInput) {
+    if (empty($zipCodeInput) || !is_numeric($_POST["zipCode"])) {
+        $_SESSION['error'][]="zipcode";
     }
 }
 
@@ -116,6 +115,4 @@ function test_input($data) {
     $data = htmlspecialchars($data);
     return $data;
 }
-function errorHandler($var) {
-    echo ($var);
-}
+
